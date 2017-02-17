@@ -1,6 +1,6 @@
 {
   "name": "dpd-sendgrid",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Module for Deployd that allows you to send an email to your users via SendGrid",
   "main": "index.js",
   "repository": {

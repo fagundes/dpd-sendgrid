@@ -35,6 +35,7 @@ function SendGrid() {
         request.personalizations[0].subject = data.subject;
 
         if (typeof data.to == 'string') {
+            request.personalizations[0].to[0] = {};
             request.personalizations[0].to[0].email = data.to;
         }
         else if (typeof data.to == 'Array') {
