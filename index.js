@@ -4,7 +4,8 @@
 
 var Resource = require('deployd/lib/resource'),
     util = require('util'),
-    SendGridService = require('sendgrid');
+    SendGridService = require('sendgrid'),
+    MailHelper = require('sendgrid').mail;
 
 /**
  * Module Setup
@@ -19,61 +20,35 @@ function SendGrid() {
 
     var createRequest = function (data) {
 
-        var request = {
-            method: 'POST',
-            path: '/v3/mail/send',
-            personalizations: [
-                {
-                    to: [],
-                    subject: ''
-                }
-            ],
-            from: {},
-            content: []
-        };
+        var mail = new MailHelper.Mail();
+        var pers = new MailHelper.Personalization();
 
-        request.personalizations[0].subject = data.subject;
+        mail.addPersonalization(pers);
 
-        if (typeof data.to == 'string') {
-            request.personalizations[0].to[0] = {};
-            request.personalizations[0].to[0].email = data.to;
-        }
-        else if (typeof data.to == 'Array') {
-            request.personalizations[0].to = data.to;
-        }
-        else if (typeof data.to == 'object') {
-            request.personalizations[0].to[0] = data.to;
-        }
-
-        if (typeof data.from == 'string') {
-            request.from.email = data.from;
-        }
-        else if (typeof data.from == 'object') {
-            request.from = data.from;
-        }
+        pers.addTo(new MailHelper.Email(data.to));
+        mail.setFrom(new MailHelper.Email(data.from));
+        mail.setSubject(data.subject);
 
         if (data.html) {
-            request.content.push({
-                type: 'text/html',
-                value: data.html
-            });
+            mail.addContent(new MailHelper.Content('text/html', data.html));
         }
 
         if (data.text) {
-            request.content.push({
-                type: 'text/plain',
-                value: data.text
-            });
+            mail.addContent(new MailHelper.Content('text/plain', data.text));
         }
 
-        return sg.emptyRequest(request);
+        // todo add support bcc and cc
+
+        return sg.emptyRequest({
+            method: 'POST',
+            path: '/v3/mail/send',
+            body: mail.toJSON()
+        });
     };
 
     this.send = function (data, callback) {
-        var request = createRequest(data);
-
-        //With callback
-        sg.API(request, callback);
+        console.log(data);
+        sg.API(createRequest(data), callback);
     };
 }
 util.inherits(SendGrid, Resource);
